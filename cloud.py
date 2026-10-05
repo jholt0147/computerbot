@@ -29,7 +29,7 @@ def result_chooser(results):
         if n is None or n > len(results):
             return "Sorry, which number?"
         run(BROWSER, results[n - 1]["url"])
-        return "Opening it."
+        return "Working..."
     return pick
 
 
