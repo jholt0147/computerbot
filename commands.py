@@ -62,7 +62,7 @@ def open_comms(m):
 
 @command(r"\b(?:red alert)\b")
 def red_alert(m):
-    subprocess.run(["mpv", "--loop=2", "/home/jjholt/sounds/redalert.mp3"])
+    subprocess.run(["mpv", "--loop=2", "./sounds/redalert.mp3"])
     return "Red alert. all hands to battlestations. red alert."
 
 
