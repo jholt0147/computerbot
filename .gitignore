@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+
+# Sound effects are not distributed with the project (see sounds/README.md)
+sounds/*.mp3
+sounds/*.wav
+sounds/*.ogg

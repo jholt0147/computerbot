@@ -29,7 +29,7 @@ TERMINAL = "foot"                                 # or alacritty, xterm, kitty..
 BROWSER = "qutebrowser"
 SEARCH_URL = "https://duckduckgo.com/?q="         # fallback if the search tool fails
 STARDATE_YEAR_SHIFT = 400      # pretend it is 2426 for stardates; 0 = raw TNG formula
-COMMS_HOST = "hp11"            # machine "open hailing frequencies" connects to over ssh
+COMMS_HOST = os.environ.get("COMMS_HOST", "hp11")   # machine "open hailing frequencies" ssh's to ("" = none)
 SOUNDS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sounds")
 # Matches "code zero zero zero destruct zero", also as "code 000, destruct 0."
 # (Whisper often writes digits and punctuation). Override with the env variable.

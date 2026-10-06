@@ -58,18 +58,34 @@ def open_terminal(m):
 
 @command(r"\b(?:open communications|open hailing frequencies)\b")
 def open_comms(m):
+    if not COMMS_HOST:
+        return "No communications host is set. Edit COMMS_HOST in common.py."
     run("footclient", "ssh", COMMS_HOST, "-t", "tmux", "a")
     return "Hailing frequencies open."
 
 
+def play_sound(name, *options):
+    """Play a sound effect from the sounds folder; skip quietly if it isn't there."""
+    path = os.path.join(SOUNDS_DIR, name)
+    if not os.path.exists(path):
+        print(f"[sound] {path} not found -- skipping the sound effect")
+        return False
+    try:
+        subprocess.run(["mpv", *options, path])
+    except OSError as e:                     # mpv not installed
+        print(f"[sound error] {e}")
+        return False
+    return True
+
+
 @command(r"\b(?:red alert)\b")
 def red_alert(m):
-    subprocess.run(["mpv", "--loop=2", os.path.join(SOUNDS_DIR, "redalert.mp3")])
+    play_sound("redalert.mp3", "--loop=2")
     return "Red alert. all hands to battlestations. red alert."
 
 @command(SELF_DESTRUCT_PATTERN)
 def self_destruct(m):
-    subprocess.run(["mpv", os.path.join(SOUNDS_DIR, "selfdestruct.wav")])
+    play_sound("selfdestruct.wav")
     return "Self-destruct sequence initiated. Core breach imminent."
 
 
