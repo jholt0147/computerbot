@@ -13,7 +13,7 @@ import urllib.request
 WAKE_WORD = "computer"
 LLAMA_URL = "http://127.0.0.1:8080/v1/chat/completions"
 SYSTEM_PROMPT = (
-    "You are a helpful voice assistant. Answer in three to five "
+    "You are a helpful voice assistant. Answer in one to three "
     "plain spoken paragraphs. No markdown, lists, or emojis. "
     "Occasionally add a short insight, humorous remark, or quip about the content."
 )
@@ -29,7 +29,13 @@ TERMINAL = "foot"                                 # or alacritty, xterm, kitty..
 BROWSER = "qutebrowser"
 SEARCH_URL = "https://duckduckgo.com/?q="         # fallback if the search tool fails
 STARDATE_YEAR_SHIFT = 400      # pretend it is 2426 for stardates; 0 = raw TNG formula
-SELF_DESTRUCT_TRIGGER = os.environ.get("SELF_DESTRUCT_TRIGGER", "Code zero zero zero destruct zero")
+COMMS_HOST = "hp11"            # machine "open hailing frequencies" connects to over ssh
+SOUNDS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sounds")
+# Matches "code zero zero zero destruct zero", also as "code 000, destruct 0."
+# (Whisper often writes digits and punctuation). Override with the env variable.
+SELF_DESTRUCT_PATTERN = os.environ.get(
+    "SELF_DESTRUCT_PATTERN",
+    r"\bcode\W*(?:(?:zero|0)\W*){3}destruct\W*(?:zero|0)\b")
 
 RATE = 16000
 SILENCE_RMS = 1000          # raise if it never stops recording, lower if it never starts

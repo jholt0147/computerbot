@@ -11,11 +11,12 @@ To add a command, copy the pattern:
 """
 import datetime
 import json
-import re
+import os
 import subprocess
 
 from common import (command, run, to_number, spoken_year, settings,
-                    BROWSER, TERMINAL, STARDATE_YEAR_SHIFT, SELF_DESTRUCT_TRIGGER)
+                    BROWSER, TERMINAL, STARDATE_YEAR_SHIFT,
+                    COMMS_HOST, SOUNDS_DIR, SELF_DESTRUCT_PATTERN)
 
 
 # ------------------------------------------------------------ voice switch --
@@ -57,19 +58,18 @@ def open_terminal(m):
 
 @command(r"\b(?:open communications|open hailing frequencies)\b")
 def open_comms(m):
-    run("footclient", "ssh", "hp11", "-t", "tmux", "a")
+    run("footclient", "ssh", COMMS_HOST, "-t", "tmux", "a")
     return "Hailing frequencies open."
 
 
 @command(r"\b(?:red alert)\b")
 def red_alert(m):
-    subprocess.run(["mpv", "--loop=2", "./sounds/redalert.mp3"])
+    subprocess.run(["mpv", "--loop=2", os.path.join(SOUNDS_DIR, "redalert.mp3")])
     return "Red alert. all hands to battlestations. red alert."
 
-SELF_DESTRUCT_TRIGGER="Code zero zero zero destruct zero"
-@command(rf"\b{re.escape(SELF_DESTRUCT_TRIGGER)}\b")
+@command(SELF_DESTRUCT_PATTERN)
 def self_destruct(m):
-    subprocess.run(["mpv", "./sounds/selfdestruct.wav"])
+    subprocess.run(["mpv", os.path.join(SOUNDS_DIR, "selfdestruct.wav")])
     return "Self-destruct sequence initiated. Core breach imminent."
 
 
