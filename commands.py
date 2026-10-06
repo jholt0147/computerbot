@@ -11,10 +11,11 @@ To add a command, copy the pattern:
 """
 import datetime
 import json
+import re
 import subprocess
 
 from common import (command, run, to_number, spoken_year, settings,
-                    BROWSER, TERMINAL, STARDATE_YEAR_SHIFT)
+                    BROWSER, TERMINAL, STARDATE_YEAR_SHIFT, SELF_DESTRUCT_TRIGGER)
 
 
 # ------------------------------------------------------------ voice switch --
@@ -64,6 +65,12 @@ def open_comms(m):
 def red_alert(m):
     subprocess.run(["mpv", "--loop=2", "./sounds/redalert.mp3"])
     return "Red alert. all hands to battlestations. red alert."
+
+
+@command(rf"\b{re.escape(SELF_DESTRUCT_TRIGGER)}\b")
+def self_destruct(m):
+    subprocess.run(["mpv", "./sounds/selfdestruct.mp3"])
+    return "Self-destruct sequence initiated. Core breach imminent."
 
 
 @command(r"\b(?:open|launch|start)\b.*\bqute\s*browser\b|\b(?:open|launch)\b.*\bbrowser\b")
