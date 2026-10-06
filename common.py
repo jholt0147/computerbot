@@ -22,8 +22,8 @@ WHISPER_BIN = "whisper-cli"                       # whisper.cpp binary
 WHISPER_MODEL = os.path.expanduser("~/models/ggml-base.en.bin")
 
 PIPER_BIN = "piper"
-PIPER_MODEL = os.path.expanduser("~/models/en_US-kathleen-low.onnx")
-PIPER_RATE = 16000                                # match the voice's sample rate
+PIPER_MODEL = os.path.expanduser("~/models/hal.onnx")
+PIPER_RATE = 22500                                # match the voice's sample rate
 
 TERMINAL = "foot"                                 # or alacritty, xterm, kitty...
 BROWSER = "qutebrowser"
