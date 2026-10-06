@@ -29,6 +29,7 @@ TERMINAL = "foot"                                 # or alacritty, xterm, kitty..
 BROWSER = "qutebrowser"
 SEARCH_URL = "https://duckduckgo.com/?q="         # fallback if the search tool fails
 STARDATE_YEAR_SHIFT = 400      # pretend it is 2426 for stardates; 0 = raw TNG formula
+SELF_DESTRUCT_TRIGGER = os.environ.get("SELF_DESTRUCT_TRIGGER", "Code zero zero zero destruct zero")
 
 RATE = 16000
 SILENCE_RMS = 1000          # raise if it never stops recording, lower if it never starts
@@ -201,8 +202,8 @@ def ask_llm(prompt: str) -> str:
 def llm_once(system, user, timeout=120):
     """One-off question to the model (no chat history), e.g. for summaries."""
     body = json.dumps({"messages": [{"role": "system", "content": system},
-                                    {"role": "user", "content": user}],
-                       "temperature": 0.7, "max_tokens": 8192}).encode()
+                                     {"role": "user", "content": user}],
+                        "temperature": 0.7, "max_tokens": 8192}).encode()
     req = urllib.request.Request(LLAMA_URL, body, {"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.load(r)["choices"][0]["message"]["content"].strip()
