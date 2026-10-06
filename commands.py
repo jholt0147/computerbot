@@ -66,10 +66,10 @@ def red_alert(m):
     subprocess.run(["mpv", "--loop=2", "./sounds/redalert.mp3"])
     return "Red alert. all hands to battlestations. red alert."
 
-
+SELF_DESTRUCT_TRIGGER="Code zero zero zero destruct zero"
 @command(rf"\b{re.escape(SELF_DESTRUCT_TRIGGER)}\b")
 def self_destruct(m):
-    subprocess.run(["mpv", "./sounds/selfdestruct.mp3"])
+    subprocess.run(["mpv", "./sounds/selfdestruct.wav"])
     return "Self-destruct sequence initiated. Core breach imminent."
 
 
