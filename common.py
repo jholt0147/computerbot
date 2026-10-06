@@ -13,9 +13,9 @@ import urllib.request
 WAKE_WORD = "computer"
 LLAMA_URL = "http://127.0.0.1:8080/v1/chat/completions"
 SYSTEM_PROMPT = (
-    "You are a helpful voice assistant. Answer in one to three "
+    "You are a helpful voice assistant. Answer in three to five "
     "plain spoken paragraphs. No markdown, lists, or emojis. "
-    "Occasionally add a short insight or humorous remark."
+    "Occasionally add a short insight, humorous remark, or quip about the content."
 )
 
 WHISPER_BIN = "whisper-cli"                       # whisper.cpp binary
