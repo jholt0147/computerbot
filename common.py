@@ -13,16 +13,15 @@ import urllib.request
 WAKE_WORD = "computer"
 LLAMA_URL = "http://127.0.0.1:8080/v1/chat/completions"
 SYSTEM_PROMPT = (
-    "You are a helpful voice assistant. Answer in one to three "
+    "You are a helpful voice assistant. Answer in three to five detailed "
     "plain spoken paragraphs. No markdown, lists, or emojis. "
-    "Occasionally add a short insight, humorous remark, or quip about the content."
 )
 
 WHISPER_BIN = "whisper-cli"                       # whisper.cpp binary
-WHISPER_MODEL = os.path.expanduser("~/models/ggml-base.en.bin")
+WHISPER_MODEL = os.path.expanduser("~/.models/ggml-base.en.bin")
 
 PIPER_BIN = "piper"
-PIPER_MODEL = os.path.expanduser("~/models/en_US-kathleen-low.onnx")
+PIPER_MODEL = os.path.expanduser("~/.models/en_US-kathleen-low.onnx")
 PIPER_RATE = 16000                                # match the voice's sample rate
 
 TERMINAL = "foot"                                 # or alacritty, xterm, kitty...

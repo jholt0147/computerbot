@@ -74,7 +74,7 @@ def speak(text: str) -> None:
         if shutil.which(PIPER_BIN) and os.path.exists(PIPER_MODEL):
             p = subprocess.Popen([PIPER_BIN, "--model", PIPER_MODEL, "--output-raw",
                                   "--sentence_silence", "0.5",
-                                  "--length_scale", "1.15",
+                                  "--length_scale", "1.05",
                                   "--noise_scale", "0.4"],
                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                  stderr=subprocess.DEVNULL)

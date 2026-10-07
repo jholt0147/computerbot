@@ -18,8 +18,8 @@ WIKIS = {
 }
 lore = {"wiki": None, "title": None, "url": None, "paras": [], "pos": 0}
 
-SUMMARY_CHARS = 8000      # how much article text to hand the model per summary
-SUMMARY_TIMEOUT = 300     # seconds to wait for the model before giving up
+SUMMARY_CHARS = 10000      # how much article text to hand the model per summary
+SUMMARY_TIMEOUT = 600     # seconds to wait for the model before giving up
 
 
 def forget_article():
