@@ -15,15 +15,15 @@ LLAMA_URL = "http://127.0.0.1:8080/v1/chat/completions"
 SYSTEM_PROMPT = (
     "You are a helpful voice assistant. Answer in one to three "
     "plain spoken paragraphs. No markdown, lists, or emojis. "
-    
+    "Occasionally add a short insight, humorous remark, or quip about the content."
 )
 
 WHISPER_BIN = "whisper-cli"                       # whisper.cpp binary
-WHISPER_MODEL = os.path.expanduser("~/.models/ggml-base.en.bin")
+WHISPER_MODEL = os.path.expanduser("~/models/ggml-base.en.bin")
 
 PIPER_BIN = "piper"
-PIPER_MODEL = os.path.expanduser("~/.models/en_US-kathleen-low.onnx")
-PIPER_RATE = 16500                                # match the voice's sample rate
+PIPER_MODEL = os.path.expanduser("~/models/en_US-kathleen-low.onnx")
+PIPER_RATE = 16000                                # match the voice's sample rate
 
 TERMINAL = "foot"                                 # or alacritty, xterm, kitty...
 BROWSER = "qutebrowser"
@@ -43,6 +43,13 @@ SILENCE_SECONDS = 1.2
 MAX_SECONDS = 15
 FOLLOWUP_WAIT = 8           # seconds to keep listening (no wake word) after a reply
 TEXT_FOLLOWUP_WAIT = 30     # seconds to wait for a typed answer to a follow-up
+WIKI_DB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+PERSIST_HISTORY = True      # save the chat history to a file and reload it at launch
+HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "history.jsonl")
+HISTORY_LIMIT = 20          # most chat messages sent to the model with each request
+HISTORY_CHARS = 6000        # ...and most characters of history, whichever limit is hit first
+HISTORY_KEEP = 200          # most messages kept in the file (older ones are dropped)
+USE_LOCAL_WIKI = True       # use imported Memory Alpha/Beta databases when present (import_wiki.py)
 SAY_WORKING = True          # say "Working." before slow steps (searches, summaries, chat)
 
 # Runtime switches (commands can change these while the assistant runs)
@@ -185,23 +192,97 @@ def naturalize(text):
 
 
 # ---------------------------------------------------------------- the LLM --
-history = []
+history = []     # chat messages: {"role": "user" | "assistant", "content": ...}
+
+
+def load_history():
+    """Reload the saved conversation (if there is one). Called once at launch."""
+    if not PERSIST_HISTORY or not os.path.exists(HISTORY_FILE):
+        return
+    messages, lines = [], 0
+    try:
+        with open(HISTORY_FILE, encoding="utf-8") as f:
+            for line in f:
+                lines += 1
+                try:
+                    m = json.loads(line)
+                    if m["role"] in ("user", "assistant") and isinstance(m["content"], str):
+                        messages.append({"role": m["role"], "content": m["content"]})
+                except (ValueError, KeyError, TypeError):
+                    continue                  # skip a damaged line
+    except OSError as e:
+        print(f"[history] can't read {HISTORY_FILE}: {e}")
+        return
+    history[:] = messages[-HISTORY_KEEP:]
+    if lines > HISTORY_KEEP:                  # the file grew too long: trim it
+        _rewrite_history_file()
+    print(f"[history] loaded {len(history)} messages from {HISTORY_FILE}")
+
+
+def _rewrite_history_file():
+    try:
+        tmp = HISTORY_FILE + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            for m in history:
+                f.write(json.dumps(m, ensure_ascii=False) + "\n")
+        os.replace(tmp, HISTORY_FILE)
+    except OSError as e:
+        print(f"[history] can't trim {HISTORY_FILE}: {e}")
+
+
+def remember(user_text, assistant_text):
+    """Add an exchange to the chat history (and the history file)."""
+    new = [{"role": "user", "content": user_text},
+           {"role": "assistant", "content": assistant_text}]
+    history.extend(new)
+    if not PERSIST_HISTORY:
+        return
+    try:
+        os.makedirs(os.path.dirname(HISTORY_FILE), exist_ok=True)
+        with open(HISTORY_FILE, "a", encoding="utf-8") as f:
+            for m in new:
+                f.write(json.dumps(m, ensure_ascii=False) + "\n")
+    except OSError as e:
+        print(f"[history] can't save to {HISTORY_FILE}: {e}")
+
+
+def clear_history():
+    """Forget the conversation, in memory and on disk."""
+    history.clear()
+    try:
+        os.remove(HISTORY_FILE)
+    except FileNotFoundError:
+        pass
+    except OSError as e:
+        print(f"[history] can't delete {HISTORY_FILE}: {e}")
+
+
+def recent_history():
+    """The newest messages that fit the limits, always starting with a user message."""
+    chosen, total = [], 0
+    for msg in reversed(history):
+        total += len(msg["content"])
+        if len(chosen) >= HISTORY_LIMIT or (chosen and total > HISTORY_CHARS):
+            break
+        chosen.append(msg)
+    chosen.reverse()
+    while chosen and chosen[0]["role"] != "user":    # some models reject a leading assistant turn
+        chosen.pop(0)
+    return chosen
 
 
 def ask_llm(prompt: str) -> str:
     """Chat with the llama-server model, remembering recent turns."""
-    history.append({"role": "user", "content": prompt})
-    body = json.dumps({
-        "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + history[-10:],
-        "temperature": 0.7, "max_tokens": 8192,
-    }).encode()
+    messages = ([{"role": "system", "content": SYSTEM_PROMPT}] + recent_history()
+                + [{"role": "user", "content": prompt}])
+    body = json.dumps({"messages": messages, "temperature": 0.7, "max_tokens": 8192}).encode()
     req = urllib.request.Request(LLAMA_URL, body, {"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=120) as r:
             reply = json.load(r)["choices"][0]["message"]["content"].strip()
     except Exception as e:
-        return f"I couldn't reach the language model. {e}"
-    history.append({"role": "assistant", "content": reply})
+        return f"I couldn't reach the language model. {e}"   # nothing is remembered on failure
+    remember(prompt, reply)
     return reply
 
 

@@ -14,7 +14,7 @@ import json
 import os
 import subprocess
 
-from common import (command, run, to_number, spoken_year, settings,
+from common import (command, run, to_number, spoken_year, settings, clear_history,
                     BROWSER, TERMINAL, STARDATE_YEAR_SHIFT,
                     COMMS_HOST, SOUNDS_DIR, SELF_DESTRUCT_PATTERN)
 
@@ -37,6 +37,13 @@ def voice_off(m):
 def voice_on(m):
     settings["tts"] = True
     return "Voice on."
+
+
+@command(r"^\W*(?:clear|forget|reset|erase|delete)\s+(?:all\s+)?(?:the\s+|our\s+|my\s+)?"
+         r"(?:chat\s+|conversation\s+)?(?:history|conversation|chat|everything)\W*$")
+def forget_history(m):
+    clear_history()
+    return "Conversation history cleared."
 
 
 # ----------------------------------------------------------- sound & apps --

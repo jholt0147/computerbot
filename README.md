@@ -35,6 +35,11 @@ Developed and tested only on amd64 Alpine Linux (with Sway).
 | "google best pizza"                                     | searches with `ddgr`/`googler`, reads the top three, say a number to open one |
 | "what's the news" / "tech headlines"                    | reads headlines, "more" for the next ones |
 | anything else                                           | goes to your local LLM, and it keeps listening for a follow-up |
+| "clear history" / "forget everything"                  | erases the saved conversation |
+
+Your conversation with the LLM is saved to `data/history.jsonl` and reloaded the next
+time you start (settings: `PERSIST_HISTORY`, `HISTORY_LIMIT`, `HISTORY_CHARS` and
+`HISTORY_KEEP` in `common.py`). The file is ignored by git.
 
 You can also type requests at the `>` prompt. `/help` lists options, `/quit` exits.
 
@@ -58,6 +63,25 @@ On Alpine: `apk add python3 alsa-utils pamixer mpv espeak-ng qutebrowser foot`
 5. Run it from this folder: `python3 computer.py`
 
 Modes: `python3 computer.py` (voice + typing), `--mute` (starts with voice off), `--text` (typing only, no microphone).
+
+## Offline Memory Alpha / Memory Beta (optional)
+
+By default lookups use the live wikis. For instant, offline lookups you can
+import a database dump once:
+
+1. Open `https://memory-alpha.fandom.com/wiki/Special:Statistics` (and the same
+   for `memory-beta`) and look for the "Database dumps" section. Download the
+   **current pages** dump (not the full history). Fandom only lets wiki admins
+   request fresh dumps, so the available one may be old.
+2. Run `python3 import_wiki.py alpha path/to/dump.xml.7z` (or `beta`). It accepts
+   `.xml`, `.xml.gz` and `.xml.7z` (a `7z` program, `apk add 7zip`, is needed
+   for `.7z`, or unpack it yourself first).
+3. `python3 import_wiki.py --info` shows what was imported.
+
+The databases are written to `data/`, which is ignored by git. Don't commit or
+redistribute them: the wikis' text is under Creative Commons licenses. When the
+local copy has no match, the assistant asks the live wiki, so a stale dump is
+not a problem. Set `USE_LOCAL_WIKI = False` in `common.py` to turn this off.
 
 ## Adding a command
 
@@ -83,6 +107,8 @@ commands are registered before broad ones (see the import order in
 | `commands.py`     | local commands |
 | `cloud.py`        | web search and news |
 | `memory_alpha.py` | Memory Alpha / Memory Beta lookups |
+| `wiki_local.py`   | searches the optional local copies of those wikis |
+| `import_wiki.py`  | builds the local copies from a Fandom dump (run once, optional) |
 | `sounds/`         | put your own sound effects here (not included) |
 
 ## Credits and licensing

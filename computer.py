@@ -17,6 +17,8 @@ Files (keep them all in the same folder):
     commands.py      local commands (volume, time, sway, voice on/off ...)
     cloud.py         internet tools (web search, news)
     memory_alpha.py  Star Trek lookups from Memory Alpha and Beta
+    wiki_local.py    searches local copies of those wikis (optional)
+    import_wiki.py   builds the local copies from a Fandom dump (run it once)
 
 Needs (Alpine):  apk add python3 alsa-utils pamixer espeak-ng qutebrowser foot
 Plus:            whisper.cpp (whisper-cli + a ggml model) for speech-to-text
@@ -40,7 +42,8 @@ from common import (WAKE_WORD, WHISPER_BIN, WHISPER_MODEL,
                     PIPER_BIN, PIPER_MODEL, PIPER_RATE, RATE, SILENCE_RMS,
                     SILENCE_SECONDS, MAX_SECONDS, FOLLOWUP_WAIT,
                     TEXT_FOLLOWUP_WAIT, settings,
-                    handle, naturalize, take_followup, set_speaker, new_request)
+                    handle, naturalize, take_followup, set_speaker, new_request,
+                    load_history)
 
 # Importing these files is what registers their commands. The order matters:
 # commands are checked in the order they are registered, so specific ones
@@ -266,6 +269,7 @@ def main():
 
     if args.mute or args.text:
         settings["tts"] = False
+    load_history()               # pick up the saved conversation, if any
     speak("Establishing secure connection. System Online. Memory Alpha Priority One. Access Granted.")
     if not args.text:
         threading.Thread(target=voice_listener, daemon=True).start()
