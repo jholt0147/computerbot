@@ -8,8 +8,9 @@ import re
 import urllib.parse
 import urllib.request
 
+import wiki_local
 from common import (command, run, set_followup, handle, llm_once, working,
-                    ORDINALS, BROWSER)
+                    ORDINALS, BROWSER, USE_LOCAL_WIKI)
 
 WIKIS = {
     "alpha": "https://memory-alpha.fandom.com/api.php",   # canon
@@ -35,13 +36,13 @@ def wiki_api(wiki, **params):
         return json.load(r)
 
 
-def wiki_search(wiki, query):
+def _api_search(wiki, query):
     d = wiki_api(wiki, action="query", list="search", srsearch=query,
                  srlimit=5, srnamespace=0)
     return [h["title"] for h in d["query"]["search"]]
 
 
-def wiki_paragraphs(wiki, title):
+def _api_paragraphs(wiki, title):
     d = wiki_api(wiki, action="query", prop="extracts", explaintext=1,
                  exsectionformat="plain", redirects=1, titles=title)
     page = next(iter(d["query"]["pages"].values()))
@@ -53,6 +54,29 @@ def wiki_paragraphs(wiki, title):
                                        for p in re.findall(r"<p>(.*?)</p>", h, re.S)))
     return [re.sub(r"\[\d+\]", "", p).strip()
             for p in text.split("\n") if len(p.strip()) > 60]
+
+
+def wiki_search(wiki, query):
+    """Matching article titles: from the local database if there is one, else the live wiki."""
+    if USE_LOCAL_WIKI and wiki_local.available(wiki):
+        titles = wiki_local.search(wiki, query)
+        if titles:
+            print(f"[wiki] {len(titles)} match(es) from the local Memory {wiki.title()} database")
+            return titles
+        try:                                  # not in the (possibly old) dump: ask the live wiki
+            return _api_search(wiki, query)
+        except Exception as e:
+            print(f"[wiki] no local match, and the live wiki failed: {e}")
+            return []
+    return _api_search(wiki, query)
+
+
+def wiki_paragraphs(wiki, title):
+    if USE_LOCAL_WIKI:
+        paras = wiki_local.paragraphs(wiki, title)
+        if paras:
+            return paras
+    return _api_paragraphs(wiki, title)
 
 
 # ---------------------------------------------------------- reading aloud --

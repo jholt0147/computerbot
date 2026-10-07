@@ -1,6 +1,10 @@
 __pycache__/
 *.pyc
 
+# Local wiki databases built by import_wiki.py (large, and licensed text)
+data/
+*.db
+
 # Sound effects are not distributed with the project (see sounds/README.md)
 sounds/*.mp3
 sounds/*.wav
